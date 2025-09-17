@@ -214,7 +214,10 @@ namespace DZ_Update.Control
             File.Delete(localZipFile);
             //覆盖文件
             DirFileOperateTool.CopyDirectory(updateVersionDir, Environment.CurrentDirectory);
-            //修改本地版本
+            //删除运行目录多余的 update.json
+            String jsonFile = Path.Combine(Environment.CurrentDirectory, UpdateDefine.SubUpdateJsonFileName);
+            if (File.Exists(jsonFile))
+                File.Delete(jsonFile);
             //修改本地版本
             VersionTool.UpdateLocalVersion(_subUpdateInfo.CurrentVersion);
         }
