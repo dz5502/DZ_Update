@@ -75,6 +75,11 @@ namespace DZ_Update.Control
         {
             return _localUpdateConfig.Version;
         }
+
+        public static String GetHttpServer()
+        {
+            return _localUpdateConfig.HttpServer;
+        }
     }
 
 }

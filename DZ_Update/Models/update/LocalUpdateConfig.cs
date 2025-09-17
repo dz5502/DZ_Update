@@ -29,5 +29,6 @@ namespace DZ_Update.Models.update
         public String ClientType { get; set; }
         public String UserName { get; set; }
         public String Pwd { get; set; }
+        public String HttpServer { get; set; }
     }
 }

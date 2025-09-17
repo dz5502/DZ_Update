@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using DZ_Update.CommonTools;
 using DZ_Update.Models;
 using Newtonsoft.Json;
@@ -13,10 +11,9 @@ namespace DZ_Update.Control
 {
     public class HttpFileUtil
     {
-        private static String _url = "http://127.0.0.1:5000";
         public static Rep_GetDirList GetDirList(String dir)
         {
-            var result = HttpTool.ClientConnect(_url + $"/{dir}" + "?json", Method.GET, null, GetToken());
+            var result = HttpTool.ClientConnect(VersionTool.GetHttpServer() + $"/{dir}" + "?json", Method.GET, null, GetToken());
             if ((result != null) && (!result.IsSuccessful))
                 throw new Exception(result.Content + result.ErrorMessage);
 
@@ -36,7 +33,7 @@ namespace DZ_Update.Control
                 Console.Write($"文件{Path.GetFileName(localFile)}下载进度 {(currentSize * 100.0 / fileSize).ToString("F2")}%");
             };
 
-            var result = HttpTool.DownloadFile(_url + $"/{remoteFile}", progressAction, GetToken());
+            var result = HttpTool.DownloadFile(VersionTool.GetHttpServer() + $"/{remoteFile}", progressAction, GetToken());
             if (!result.ExistData())
                 throw new Exception("从服务器下载文件失败！");
 
@@ -54,11 +51,7 @@ namespace DZ_Update.Control
 
         private static String GetToken()
         {
-            Req_Login login = new Req_Login();
-            login.user = VersionTool.GetLocalVersionInfo().UserName;
-            login.pwd = VersionTool.GetLocalVersionInfo().Pwd;
-
-            String s = $"{login.user}:{login.pwd}";
+            String s = $"{VersionTool.GetLocalVersionInfo().UserName}:{VersionTool.GetLocalVersionInfo().Pwd}";
             var bytes = Encoding.UTF8.GetBytes(s);
             String token = Convert.ToBase64String(bytes);
             return token;
