@@ -61,6 +61,9 @@
     <Compile Include="CommonTools\HttpTool.cs" />
     <Compile Include="CommonTools\RegistryKeyTool.cs" />
     <Compile Include="CommonTools\ZipTool.cs" />
+    <Compile Include="Control\DZUpdateHelper.cs" />
+    <Compile Include="Control\HttpFileUtil.cs" />
+    <Compile Include="Control\VersionTool.cs" />
     <Compile Include="Models\PCASType.cs" />
     <Compile Include="Models\Rep_GetDirList.cs" />
     <Compile Include="Models\Req_Login.cs" />
