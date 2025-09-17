@@ -62,7 +62,7 @@
     <Compile Include="Control\DZUpdateHelper.cs" />
     <Compile Include="Control\HttpFileUtil.cs" />
     <Compile Include="Control\VersionTool.cs" />
-    <Compile Include="Models\PCASType.cs" />
+    <Compile Include="Models\ClientType.cs" />
     <Compile Include="Models\Rep_GetDirList.cs" />
     <Compile Include="Models\UpdateDefine.cs" />
     <Compile Include="Models\update\LocalUpdateConfig.cs" />
