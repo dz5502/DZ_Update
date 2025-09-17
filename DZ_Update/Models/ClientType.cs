@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DZ_Update.Models
 {
     /// <summary>
-    /// pcas版本
+    /// 客户端版本
     /// </summary>
     public enum ClientType
     {
