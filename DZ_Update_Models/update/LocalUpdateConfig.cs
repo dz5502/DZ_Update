@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DZ_Update.Models.update
+namespace DZ_Update_Models.update
 {
     public class LocalUpdateConfig
     {

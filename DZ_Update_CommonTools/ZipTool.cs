@@ -1,12 +1,12 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ICSharpCode.SharpZipLib.Zip;
 
-namespace DZ_Update.CommonTools
+namespace DZ_Update_CommonTools
 {
     public class ZipTool
     {
@@ -126,8 +126,42 @@ namespace DZ_Update.CommonTools
             foreach (string file in filenames)
             {
                 FileInfo fileInfo = new FileInfo(file);
-                ZipEntry entry = new ZipEntry(Path.GetFileName(file)); //压缩包中展示的文件名  去掉路径
-                entry.DateTime = DateTime.Parse("2023-01-01");// fileInfo.LastWriteTime;  //影响md5？
+                ZipEntry entry = new ZipEntry(Path.GetFileName(file)); //压缩包中展示的文件名  Path.GetFileName(file)
+                entry.DateTime = fileInfo.LastWriteTime;  //影响md5？
+                stream.PutNextEntry(entry);
+                using (FileStream fs = File.Open(file, FileMode.Open))
+                {
+                    int sourceBytes;
+                    do
+                    {
+                        sourceBytes = fs.Read(buffer, 0, buffer.Length);
+                        stream.Write(buffer, 0, sourceBytes);
+                    } while (sourceBytes > 0);
+
+                    fs.Close();
+                }
+            }
+            stream.Finish();
+
+            fss.Close();
+            stream.Close();
+
+        }
+
+        public static void CreateZipDir(String rootDir, string zipFile)
+        {
+            var files = Directory.GetFiles(rootDir, "*", SearchOption.AllDirectories);
+            byte[] buffer = new byte[1024 * 1024]; //缓冲区大小
+
+            FileStream fss = File.Create(zipFile);
+            ZipOutputStream stream = new ZipOutputStream(fss);
+            stream.SetLevel(9); // 压缩级别 0-9
+            foreach (string file in files)
+            {
+                FileInfo fileInfo = new FileInfo(file);
+                String entryName = file.Replace(rootDir, "").Trim(Path.DirectorySeparatorChar);
+                ZipEntry entry = new ZipEntry(entryName); //压缩包中展示的文件名  Path.GetFileName(file)
+                entry.DateTime = fileInfo.LastWriteTime;  //影响md5？
                 stream.PutNextEntry(entry);
                 using (FileStream fs = File.Open(file, FileMode.Open))
                 {

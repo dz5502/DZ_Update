@@ -1,20 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using DZ_Update.CommonTools;
-using DZ_Update.Models;
-using DZ_Update.Models.update;
-using RestSharp;
-using System.Threading;
 using DZ_Update.Control;
 
 namespace DZ_Update

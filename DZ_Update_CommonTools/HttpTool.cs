@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace DZ_Update.CommonTools
+namespace DZ_Update_CommonTools
 {
     public class HttpTool
     {

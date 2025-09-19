@@ -7,7 +7,7 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DZ_Update.CommonTools
+namespace DZ_Update_CommonTools
 {
     public class DirFileOperateTool
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DZ_Update.Models.update
+namespace DZ_Update_Models.update
 {
     public class MainUpdateJson
     {
@@ -12,9 +12,9 @@ namespace DZ_Update.Models.update
         /// <summary>
         /// 用于判断是否跨版本更新
         /// </summary>
-        public List<String> VersionList { get; set; }
+        public List<String> VersionList { get; set; } = new List<string>();
 
-        public List<RemoteFileInfo> FileList { get; set; }
+        public List<RemoteFileInfo> FileList { get; set; } = new List<RemoteFileInfo>();
 
         /// <summary>
         /// 暂时停用

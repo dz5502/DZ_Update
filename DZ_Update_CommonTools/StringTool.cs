@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace DZ_Update
+namespace DZ_Update_CommonTools
 {
     public static class StringTool
     {

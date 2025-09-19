@@ -4,17 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{670F0D7C-4260-4057-A794-B36DACB82EED}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>DZ_Update</RootNamespace>
-    <AssemblyName>DZ_Update</AssemblyName>
+    <ProjectGuid>{9DB251D6-3D78-464F-9DFD-792F62F20D6E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DZ_Update_Models</RootNamespace>
+    <AssemblyName>DZ_Update_Models</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +23,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,15 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="RestSharp, Version=106.15.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.106.15.0\lib\net452\RestSharp.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -50,25 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Control\DZUpdateHelper.cs" />
-    <Compile Include="Control\HttpFileUtil.cs" />
-    <Compile Include="Control\VersionTool.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="ClientType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DZ_Update_CommonTools\DZ_Update_CommonTools.csproj">
-      <Project>{9556CEB5-9D93-4566-9F50-0F3A6B86C689}</Project>
-      <Name>DZ_Update_CommonTools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DZ_Update_Models\DZ_Update_Models.csproj">
-      <Project>{9DB251D6-3D78-464F-9DFD-792F62F20D6E}</Project>
-      <Name>DZ_Update_Models</Name>
-    </ProjectReference>
+    <Compile Include="Rep_GetDirList.cs" />
+    <Compile Include="UpdateDefine.cs" />
+    <Compile Include="update\LocalUpdateConfig.cs" />
+    <Compile Include="update\MainUpdateJson.cs" />
+    <Compile Include="update\SubUpdateJson.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

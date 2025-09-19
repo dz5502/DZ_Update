@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DZ_Update.CommonTools
+namespace DZ_Update_CommonTools
 {
     /// <summary>
     /// 注册表操作

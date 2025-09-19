@@ -2,12 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DZ_Update.CommonTools;
-using DZ_Update.Models.update;
-using DZ_Update.Models;
 using Newtonsoft.Json;
+using DZ_Update_CommonTools;
+using DZ_Update_Models.update;
+using DZ_Update_Models;
 
 namespace DZ_Update.Control
 {

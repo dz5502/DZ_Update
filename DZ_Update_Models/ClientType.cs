@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DZ_Update.Models
+namespace DZ_Update_Models
 {
     /// <summary>
     /// 客户端版本

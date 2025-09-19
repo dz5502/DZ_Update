@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DZ_Update.CommonTools
+namespace DZ_Update_CommonTools
 {
     /// <summary>
     /// 计算文件的MD5值

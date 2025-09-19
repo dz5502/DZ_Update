@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using DZ_Update.CommonTools;
-using DZ_Update.Models;
+using DZ_Update_CommonTools;
+using DZ_Update_Models;
 using Newtonsoft.Json;
 using RestSharp;
 
