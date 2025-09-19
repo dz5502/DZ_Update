@@ -37,3 +37,9 @@
 
 ## 运行效果
 <img width="1155" height="604" alt="QQ20250917-154533" src="https://github.com/user-attachments/assets/6f512881-0478-4ee7-af8a-7cbdfef72e4f" />
+
+# DZ_Update_ServerFileManager
+用于构建服务器端更新文件，保持文件结构与客户端固定约束。自动生成更新说明json文件。
+
+<img width="1284" height="813" alt="image" src="https://github.com/user-attachments/assets/f8e2fd96-793d-4fdb-bb0d-aa166b8ec907" />
+
