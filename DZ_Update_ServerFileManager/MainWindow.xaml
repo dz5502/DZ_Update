@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel VerticalAlignment="Center">
-            <TextBlock>文件管理器主目录</TextBlock>
+            <TextBlock>文件发布目录</TextBlock>
             <StackPanel Orientation="Horizontal" Height="26">
                 <TextBox Text="{Binding HttpFileManagerDir}" Width="500" FontSize="15" IsReadOnly="True"></TextBox>
                 <Button  Command="{Binding OpenHttpFileDirCommand}">......</Button>
