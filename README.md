@@ -3,7 +3,7 @@
 服务器端使用DUFS作为http文件服务器，DUFS较简单在此就不多余说明了。
 暂时未适配GUI，后续打算使用WPF做一个配套的界面。
 
-服务器文件层级管理及自动生成json说明文件的工具后续开发。
+已支持服务器文件层级管理及自动生成json说明文件的自动化工具。
 
 ## 支持功能
 1. 权限控制（配合DUFS）
@@ -37,3 +37,9 @@
 
 ## 运行效果
 <img width="1155" height="604" alt="QQ20250917-154533" src="https://github.com/user-attachments/assets/6f512881-0478-4ee7-af8a-7cbdfef72e4f" />
+
+# DZ_Update_ServerFileManager
+用于构建服务器端更新文件，保持文件结构与客户端固定约束。自动生成更新说明json文件。
+
+<img width="1284" height="813" alt="image" src="https://github.com/user-attachments/assets/f8e2fd96-793d-4fdb-bb0d-aa166b8ec907" />
+
