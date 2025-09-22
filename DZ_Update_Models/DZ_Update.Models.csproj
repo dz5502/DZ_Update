@@ -7,8 +7,8 @@
     <ProjectGuid>{9DB251D6-3D78-464F-9DFD-792F62F20D6E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DZ_Update_Models</RootNamespace>
-    <AssemblyName>DZ_Update_Models</AssemblyName>
+    <RootNamespace>DZ_Update.Models</RootNamespace>
+    <AssemblyName>DZ_Update.Models</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

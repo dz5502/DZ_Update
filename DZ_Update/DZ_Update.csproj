@@ -61,13 +61,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DZ_Update_CommonTools\DZ_Update_CommonTools.csproj">
+    <ProjectReference Include="..\DZ_Update_CommonTools\DZ_Update.CommonTools.csproj">
       <Project>{9556CEB5-9D93-4566-9F50-0F3A6B86C689}</Project>
-      <Name>DZ_Update_CommonTools</Name>
+      <Name>DZ_Update.CommonTools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DZ_Update_Models\DZ_Update_Models.csproj">
+    <ProjectReference Include="..\DZ_Update_Models\DZ_Update.Models.csproj">
       <Project>{9DB251D6-3D78-464F-9DFD-792F62F20D6E}</Project>
-      <Name>DZ_Update_Models</Name>
+      <Name>DZ_Update.Models</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

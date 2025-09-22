@@ -7,8 +7,8 @@
     <ProjectGuid>{9556CEB5-9D93-4566-9F50-0F3A6B86C689}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DZ_Update_CommonTools</RootNamespace>
-    <AssemblyName>DZ_Update_CommonTools</AssemblyName>
+    <RootNamespace>DZ_Update.CommonTools</RootNamespace>
+    <AssemblyName>DZ_Update.CommonTools</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

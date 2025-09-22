@@ -5,11 +5,11 @@ VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DZ_Update", "DZ_Update\DZ_Update.csproj", "{670F0D7C-4260-4057-A794-B36DACB82EED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DZ_Update_ServerFileManager", "DZ_Update_ServerFileManager\DZ_Update_ServerFileManager.csproj", "{AEA85209-C5E8-4979-91AF-8AA1762E3E71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DZ_Update.ServerFileManager", "DZ_Update_ServerFileManager\DZ_Update.ServerFileManager.csproj", "{AEA85209-C5E8-4979-91AF-8AA1762E3E71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DZ_Update_CommonTools", "DZ_Update_CommonTools\DZ_Update_CommonTools.csproj", "{9556CEB5-9D93-4566-9F50-0F3A6B86C689}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DZ_Update.CommonTools", "DZ_Update_CommonTools\DZ_Update.CommonTools.csproj", "{9556CEB5-9D93-4566-9F50-0F3A6B86C689}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DZ_Update_Models", "DZ_Update_Models\DZ_Update_Models.csproj", "{9DB251D6-3D78-464F-9DFD-792F62F20D6E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DZ_Update.Models", "DZ_Update_Models\DZ_Update.Models.csproj", "{9DB251D6-3D78-464F-9DFD-792F62F20D6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
