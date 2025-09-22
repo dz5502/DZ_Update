@@ -150,10 +150,6 @@ namespace DZ_Update_ServerFileManager
                 {
                     _mainUpdateJson = new MainUpdateJson();
                 }
-                else
-                {
-                    _mainUpdateJson = JsonConvert.DeserializeObject<MainUpdateJson>(File.ReadAllText(mainUpdateJsonFile));
-                }
 
                 String versionDirName = $"{VersionA}.{VersionB}.{VersionC}.{VersionD}";
                 //判断是否已经存在
@@ -191,7 +187,7 @@ namespace DZ_Update_ServerFileManager
 
                 }
 
-                File.WriteAllText(mainUpdateJsonFile, JsonConvert.SerializeObject(_mainUpdateJson));
+                File.WriteAllText(mainUpdateJsonFile, JsonConvert.SerializeObject(_mainUpdateJson, Formatting.Indented));
                 //生成具体的更新文件
                 //创建文件夹
                 String versionDir = System.IO.Path.Combine(HttpFileManagerDir, versionDirName);
@@ -300,6 +296,13 @@ namespace DZ_Update_ServerFileManager
                     try
                     {
                         _mainUpdateJson = JsonConvert.DeserializeObject<MainUpdateJson>(File.ReadAllText(mainUpdateJson));
+
+                        //自动填充历史最新版本
+                        var strs = _mainUpdateJson.LatestVersion.Split('.');
+                        this.VersionA = strs[0];
+                        this.VersionB = strs[1];
+                        this.VersionC = strs[2];
+                        this.VersionD = strs[3];
                     }
                     catch (Exception )
                     {
