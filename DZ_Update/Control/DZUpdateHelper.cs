@@ -163,7 +163,7 @@ namespace DZ_Update.Control
             {
                 //拷贝文件
                 //判断是否在二级目录
-                if (item.Path.Contains("\\"))
+                if (item.Path.Contains(Path.DirectorySeparatorChar))
                 {
                     String dir = Path.Combine(currentVersionBackupDir, Path.GetDirectoryName(item.Path));
                     Directory.CreateDirectory(dir);

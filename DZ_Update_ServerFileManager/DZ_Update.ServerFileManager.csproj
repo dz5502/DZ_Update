@@ -116,8 +116,12 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DZ_Update\DZ_Update.csproj">
+      <Project>{670f0d7c-4260-4057-a794-b36dacb82eed}</Project>
+      <Name>DZ_Update</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DZ_Update_CommonTools\DZ_Update.CommonTools.csproj">
-      <Project>{9556CEB5-9D93-4566-9F50-0F3A6B86C689}</Project>
+      <Project>{9556ceb5-9d93-4566-9f50-0f3a6b86c689}</Project>
       <Name>DZ_Update.CommonTools</Name>
     </ProjectReference>
     <ProjectReference Include="..\DZ_Update_Models\DZ_Update.Models.csproj">

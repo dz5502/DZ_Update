@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace DZ_Update_Models
 {
     public class UpdateDefine
     {
-        public static String VersionConfigFile = Environment.CurrentDirectory + "\\version.json";
+        public static String VersionConfigFile = Path.Combine(Environment.CurrentDirectory, "version.json");
 
         public static String MainUpdateJsonFileName = "updateAll.json";
         public static String SubUpdateJsonFileName = "update.json";

@@ -62,11 +62,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DZ_Update_CommonTools\DZ_Update.CommonTools.csproj">
-      <Project>{9556CEB5-9D93-4566-9F50-0F3A6B86C689}</Project>
+      <Project>{9556ceb5-9d93-4566-9f50-0f3a6b86c689}</Project>
       <Name>DZ_Update.CommonTools</Name>
     </ProjectReference>
     <ProjectReference Include="..\DZ_Update_Models\DZ_Update.Models.csproj">
-      <Project>{9DB251D6-3D78-464F-9DFD-792F62F20D6E}</Project>
+      <Project>{9db251d6-3d78-464f-9dfd-792f62f20d6e}</Project>
       <Name>DZ_Update.Models</Name>
     </ProjectReference>
   </ItemGroup>
