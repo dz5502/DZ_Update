@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DZ_Update.CommonTools.Base;
+using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Extensions;
 using System;
@@ -63,7 +64,7 @@ namespace DZ_Update_CommonTools
             return result;
         }
 
-        public static byte[] DownloadFile(string url, Action<Int64> progressAction, string token="")
+        public static void DownloadFile(string url, String saveFile, Action<Int64> progressAction, string token="")
         {
             var client = new RestClient(url);
             var request = new RestRequest(Method.GET);
@@ -74,7 +75,7 @@ namespace DZ_Update_CommonTools
             }
 
 
-            using (var writer = new HikFileStream())
+            using (var writer = new DZFileStream(saveFile))
             {
                 writer.Progress += (w, e) => {
                     //Console.WriteLine(string.Format("\rProgress: {0} / {1:P2}", writer.CurrentSize, ((double)writer.CurrentSize) / fileSize));
@@ -84,7 +85,7 @@ namespace DZ_Update_CommonTools
                 request.ResponseWriter = (responseStream) => responseStream.CopyTo(writer);
                 var response = client.DownloadData(request);
 
-                return writer.GetBytes();
+                return;
             }
         }
 
@@ -169,39 +170,4 @@ namespace DZ_Update_CommonTools
             return !String.IsNullOrEmpty(txt) && (txt.Length > 100);
         }
     }
-
-
-    class HikFileStream : MemoryStream
-    {
-        public HikFileStream()
-            : base()
-        {
-        }
-
-        public long CurrentSize { get; private set; }
-
-
-        public event EventHandler Progress;
-        private List<byte> _data = new List<byte>();
-        public override void Write(byte[] array, int offset, int count)
-        {
-            base.Write(array, offset, count);
-
-            byte[] temp = new byte[count];
-            Array.Copy(array, offset, temp, 0, count);
-            _data.AddRange(temp);
-
-            CurrentSize += count;
-            var h = Progress;
-            if (h != null)
-                h(this, EventArgs.Empty);//WARN: THIS SHOULD RETURNS ASAP!
-        }
-
-
-        public byte[] GetBytes()
-        { 
-            return _data.ToArray();
-        }
-    }
-
 }

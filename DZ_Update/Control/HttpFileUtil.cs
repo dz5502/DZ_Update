@@ -26,6 +26,11 @@ namespace DZ_Update.Control
             Rep_GetDirList fileInfos = HttpFileUtil.GetDirList(Path.GetDirectoryName(remoteFile));
             //找到对应文件大小
             Int64 fileSize = fileInfos.paths.FirstOrDefault(a => a.name.Equals(Path.GetFileName(remoteFile))).size.Value;
+            //存到本地
+            //判断文件夹是否存在
+            String dir = Path.GetDirectoryName(localFile);
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
 
             Action<Int64> progressAction = (currentSize) =>
             {
@@ -33,18 +38,16 @@ namespace DZ_Update.Control
                 Console.Write($"文件{Path.GetFileName(localFile)}下载进度 {(currentSize * 100.0 / fileSize).ToString("F2")}%");
             };
 
-            var result = HttpTool.DownloadFile(VersionTool.GetHttpServer() + $"/{remoteFile}", progressAction, GetToken());
-            if (!result.ExistData())
-                throw new Exception("从服务器下载文件失败！");
+            try
+            {
+                HttpTool.DownloadFile(VersionTool.GetHttpServer() + $"/{remoteFile}", localFile, progressAction, GetToken());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"从服务器下载文件失败：{ex.Message}");
+            }
 
             Console.WriteLine();
-            //存到本地
-            //判断文件夹是否存在
-            String dir = Path.GetDirectoryName(localFile);
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-
-            File.WriteAllBytes(localFile, result);
             return true;
         }
 

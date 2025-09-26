@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base\DZFileStream.cs" />
     <Compile Include="CalcMD5Tool.cs" />
     <Compile Include="CollectionTool.cs" />
     <Compile Include="DirFileOperateTool.cs" />
