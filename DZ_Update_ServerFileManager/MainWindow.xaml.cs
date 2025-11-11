@@ -122,6 +122,14 @@ namespace DZ_Update_ServerFileManager
             set { this._foceToUpdate = value; NotifyPropertyChanged(); }
         }
 
+
+        private bool _firstVersionFile;
+        public bool FirstVersionFile
+        {
+            get { return this._firstVersionFile; }
+            set { this._firstVersionFile = value; NotifyPropertyChanged(); }
+        }
+
         public BaseCommand OpenHttpFileDirCommand { get { return new BaseCommand(OpenHttpFileDir); } }
         public BaseCommand OpenSourceFileDirCommand { get { return new BaseCommand(OpenSourceFileDir); } }
         public BaseCommand GenerateUpdateFileCommand { get { return new BaseCommand(GenerateUpdateFile); } }
@@ -226,17 +234,21 @@ namespace DZ_Update_ServerFileManager
 
                 //拷贝其他文件  到更讯目录
                 DirFileOperateTool.CopyDirectory(SourceFileDir, versionDir);
-                //生成压缩包
-                var zipFiles = Directory.GetFiles(versionDir, "*", SearchOption.AllDirectories);
-                String zipFile = Path.Combine(versionDir, $"{versionDirName}.zip");
-                ZipTool.CreateZipDir(versionDir, zipFile);
 
-                RemoteFileInfo zipFileInfo = new RemoteFileInfo();
-                zipFileInfo.FileName = System.IO.Path.GetFileName(zipFile);
-                zipFileInfo.Version = _mainUpdateJson.LatestVersion;
-                zipFileInfo.MD5 = CalcMD5Tool.CalcFileMD5(zipFile);
-                zipFileInfo.Path = zipFile.Replace(versionDir, "").Trim(Path.DirectorySeparatorChar);
-                subUpdateJson.FileList.Add(zipFileInfo);
+                if (!FirstVersionFile)
+                {
+                    //生成压缩包
+                    var zipFiles = Directory.GetFiles(versionDir, "*", SearchOption.AllDirectories);
+                    String zipFile = Path.Combine(versionDir, $"{versionDirName}.zip");
+                    ZipTool.CreateZipDir(versionDir, zipFile);
+
+                    RemoteFileInfo zipFileInfo = new RemoteFileInfo();
+                    zipFileInfo.FileName = System.IO.Path.GetFileName(zipFile);
+                    zipFileInfo.Version = _mainUpdateJson.LatestVersion;
+                    zipFileInfo.MD5 = CalcMD5Tool.CalcFileMD5(zipFile);
+                    zipFileInfo.Path = zipFile.Replace(versionDir, "").Trim(Path.DirectorySeparatorChar);
+                    subUpdateJson.FileList.Add(zipFileInfo);
+                }
 
                 String subUpdateJsonFile = Path.Combine(versionDir, UpdateDefine.SubUpdateJsonFileName);
                 File.WriteAllText(subUpdateJsonFile, JsonConvert.SerializeObject(subUpdateJson, Formatting.Indented));

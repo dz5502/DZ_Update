@@ -47,6 +47,9 @@
                 <TextBox Text="{Binding VersionD}"   HorizontalAlignment="Left" Height="26" Width="40" FontSize="15"></TextBox>
 
                 <CheckBox IsChecked="{Binding FoceToUpdate}" VerticalAlignment="Center" Margin="50,0,0,0" FontSize="15" >强制更新</CheckBox>
+
+                <CheckBox IsChecked="{Binding FirstVersionFile}" VerticalAlignment="Center" Margin="50,0,0,0" FontSize="15" >原始版本（不生成zip文件）</CheckBox>
+
             </StackPanel>
 
 
