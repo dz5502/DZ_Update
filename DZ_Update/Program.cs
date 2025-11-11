@@ -7,6 +7,8 @@ namespace DZ_Update
     {
         static void Main(string[] args)
         {
+            String currentUserName = "dz";
+
             DZUpdateHelper dZUpdateHelper = new DZUpdateHelper();
             dZUpdateHelper.GetServerInfo();
 
@@ -24,7 +26,7 @@ namespace DZ_Update
             {
                 Console.WriteLine("不是强制更新，判断是否是针对版本用户的更新");
                 //不是则判断针对版本用户的更新
-                needUpdate = dZUpdateHelper.IsNeedUpdate();
+                needUpdate = dZUpdateHelper.IsNeedUpdate( dZUpdateHelper.GetClientVersion(), currentUserName);
                 if (!needUpdate)
                 {
                     Console.WriteLine("当前版本或用户不需要更新， 退出更新操作");
@@ -33,8 +35,13 @@ namespace DZ_Update
             }
             Console.WriteLine("需要更新， 执行更新操作");
             //执行更新
-            dZUpdateHelper.Update();
+            dZUpdateHelper.Update(a=>
+            {
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write($"更新总进度：{a}%");
+            });
 
+            Console.WriteLine();
             Console.WriteLine("更新操作完成， 输入任意字符结束！");
             Console.ReadKey();
         }

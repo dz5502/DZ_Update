@@ -21,7 +21,7 @@ namespace DZ_Update.Control
             return re;
         }
 
-        public static bool DownloadFile(String localFile, String remoteFile)
+        public static bool DownloadFile(String localFile, String remoteFile, Action<double> progressAction = null)
         {
             Rep_GetDirList fileInfos = HttpFileUtil.GetDirList(Path.GetDirectoryName(remoteFile));
             //找到对应文件大小
@@ -32,15 +32,16 @@ namespace DZ_Update.Control
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
 
-            Action<Int64> progressAction = (currentSize) =>
+            Action<Int64> progressAct = (currentSize) =>
             {
-                Console.SetCursorPosition(0, Console.CursorTop);
-                Console.Write($"文件{Path.GetFileName(localFile)}下载进度 {(currentSize * 100.0 / fileSize).ToString("F2")}%");
+                //Console.SetCursorPosition(0, Console.CursorTop);
+                //Console.Write($"文件{Path.GetFileName(localFile)}下载进度 {(currentSize * 100.0 / fileSize).ToString("F2")}%");
+                progressAction?.Invoke((currentSize * 100.0 / fileSize));
             };
 
             try
             {
-                HttpTool.DownloadFile(VersionTool.GetHttpServer() + $"/{remoteFile}", localFile, progressAction, GetToken());
+                HttpTool.DownloadFile(VersionTool.GetHttpServer() + $"/{remoteFile}", localFile, progressAct, GetToken());
             }
             catch (Exception ex)
             {

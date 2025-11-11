@@ -15,7 +15,7 @@ namespace DZ_Update.Control
         private String _updateBackupDir = Path.Combine(Environment.CurrentDirectory, UpdateDefine.UpdateBackupDir);
 
         private MainUpdateJson _mainUpdateInfo = null;
-        private SubUpdateJson _subUpdateInfo = null;
+        private List<SubUpdateJson> _subUpdateInfoList = new List<SubUpdateJson>();
 
         public void GetServerInfo()
         {
@@ -31,7 +31,48 @@ namespace DZ_Update.Control
             _mainUpdateInfo = JsonConvert.DeserializeObject<MainUpdateJson>(File.ReadAllText(localUpdateAllFile));
             if (_mainUpdateInfo == null)
                 throw new Exception("从服务器获取更新信息失败！");
+
+            //下载具体的更新文件   判断是否需要更新
+
+            //下载所有新的版本信息
+            int index = _mainUpdateInfo.VersionList.IndexOf(GetClientVersion());
+            for (int i = index; i < _mainUpdateInfo.VersionList.Count; i++)
+            {
+                String versionStr = _mainUpdateInfo.VersionList[i];
+                //创建具体版本文件夹
+                String lastestDir = Path.Combine(_updateDir, versionStr);
+                if (!Directory.Exists(lastestDir))
+                    Directory.CreateDirectory(lastestDir);
+
+                String localUpdateFile = Path.Combine(lastestDir, UpdateDefine.SubUpdateJsonFileName);
+                HttpFileUtil.DownloadFile(localUpdateFile, _mainUpdateInfo.GetSubUpdateJsonPath(versionStr));//updateAll.json
+                SubUpdateJson subUpdateInfo = JsonConvert.DeserializeObject<SubUpdateJson>(File.ReadAllText(localUpdateFile));
+                if (subUpdateInfo == null)
+                    throw new Exception("从服务器获取更新信息失败！！");
+
+                _subUpdateInfoList.Add(subUpdateInfo);
+            }
         }
+
+        public String GetServerLatestVersion()
+        {
+            return _mainUpdateInfo.LatestVersion;
+        }
+        public List<String> GetServerUpdateMsg()
+        {
+            List<String> re = new List<string>();
+
+            for (int i = 1; i < _subUpdateInfoList.Count; i++)
+            {
+                re.AddRange(_subUpdateInfoList[i].UpdateInfo);
+            }
+            return re;
+        }
+        public String GetClientVersion()
+        {
+            return VersionTool.GetClientVersion();
+        }
+
         /// <summary>
         /// 是否存在更新
         /// </summary>
@@ -52,63 +93,55 @@ namespace DZ_Update.Control
         public bool IsFoceToUpdate()
         {
             //下载具体的更新文件   判断是否需要更新
-            //创建具体版本文件夹
-            String lastestDir = Path.Combine(_updateDir, _mainUpdateInfo.LatestVersion);
-            if (!Directory.Exists(lastestDir))
-                Directory.CreateDirectory(lastestDir);
-
-            String localUpdateFile = Path.Combine(lastestDir, UpdateDefine.SubUpdateJsonFileName);
-            HttpFileUtil.DownloadFile(localUpdateFile, _mainUpdateInfo.GetLatestUpdateJsonPath());//updateAll.json
-            _subUpdateInfo = JsonConvert.DeserializeObject<SubUpdateJson>(File.ReadAllText(localUpdateFile));
-
-            if (_subUpdateInfo.ForceUpdate)
+            if (_subUpdateInfoList.Last().ForceUpdate)
                 return true;
 
             return false;
         }
 
-        public bool IsNeedUpdate()
+        public bool IsNeedUpdate(String currentType, String userName)
         {
-            //判断针对版本的更新  
-            if (_subUpdateInfo.TargetClientType.ExistData())
-            {
-                bool needUpdate = false;
-                ClientType currentType = VersionTool.GetClientType();
-                //存在当前版本 则提示更新
-                foreach (var item in _subUpdateInfo.TargetClientType)
-                {
-                    if (currentType.ToString().Equals(item))
-                    {
-                        needUpdate = true;
-                        break;
-                    }
-                }
+            if (IsExistUpdate() == false)
+                return false;
 
-                if (!needUpdate)
-                    return false;
+            //暂不实现对版本及用户的筛选  在跨版本更新时逻辑复杂
+            ////判断针对版本的更新  
+            //if (_subUpdateInfo.TargetClientType.ExistData())
+            //{
+            //    bool needUpdate = false;
+            //    //存在当前版本 则提示更新
+            //    foreach (var item in _subUpdateInfo.TargetClientType)
+            //    {
+            //        if (currentType.Equals(item))
+            //        {
+            //            needUpdate = true;
+            //            break;
+            //        }
+            //    }
 
-            }
+            //    if (!needUpdate)
+            //        return false;
 
-            //判断针对用户的更新    没有则不判断
-            if (_subUpdateInfo.TargetClientUser.ExistData())
-            {
-                bool needUpdate = false;
-                String userName = VersionTool.GetClientUser();
+            //}
 
-                //存在当前版本 则提示更新
-                foreach (var item in _subUpdateInfo.TargetClientUser)
-                {
-                    if (item.ToString().Equals(userName))
-                    {
-                        needUpdate = true;
-                        break;
-                    }
-                }
+            ////判断针对用户的更新    没有则不判断
+            //if (_subUpdateInfo.TargetClientUser.ExistData())
+            //{
+            //    bool needUpdate = false;
+            //    //存在当前版本 则提示更新
+            //    foreach (var item in _subUpdateInfo.TargetClientUser)
+            //    {
+            //        if (item.ToString().Equals(userName))
+            //        {
+            //            needUpdate = true;
+            //            break;
+            //        }
+            //    }
 
-                if (!needUpdate)
-                    return false;
+            //    if (!needUpdate)
+            //        return false;
 
-            }
+            //}
 
             return true;
         }
@@ -116,7 +149,7 @@ namespace DZ_Update.Control
         /// <summary>
         /// 执行更新操作
         /// </summary>
-        public void Update()
+        public void Update(Action<int> progressAction)
         {
             String currentClientVersion = VersionTool.GetClientVersion();
 
@@ -125,19 +158,34 @@ namespace DZ_Update.Control
             int currentVersionIndex = _mainUpdateInfo.VersionList.IndexOf(currentClientVersion);
             if (currentVersionIndex < 0)
             {
-                RepairClientAllFile();
+                RepairClientAllFile(progressAction);
                 return;
             }
 
+            //计算当前更新占的比例   也可以更复杂用所有需要下载文件的大小?
+            double oneProgressRatio = 1.0 / (_mainUpdateInfo.VersionList.Count - (currentVersionIndex + 1));
+            int versionCount = 0;
             for (int i = currentVersionIndex + 1; i < _mainUpdateInfo.VersionList.Count; i++)
             {
                 String needVersion = _mainUpdateInfo.VersionList[i];
-                Console.WriteLine($"更新版本{needVersion}中...");
-                DoUpdate(needVersion);
+                Console.WriteLine(Environment.NewLine + $"更新版本{needVersion}中...");
+                DoUpdate(needVersion, a =>
+                {
+                    int currentProgress = Convert.ToInt32((a * oneProgressRatio) + (oneProgressRatio * versionCount * 100));
+                    //Console.WriteLine(aa);
+                    progressAction?.Invoke(currentProgress);
+                });
+
+                versionCount++;
             }
 
         }
-        private void DoUpdate(String needVersion)
+        /// <summary>
+        /// 返回 进度100比例
+        /// </summary>
+        /// <param name="needVersion"></param>
+        /// <param name="progressAction"></param>
+        private void DoUpdate(String needVersion, Action<int> progressAction)
         {
             //_subUpdateInfo  需重新生成
             //下载具体的更新文件   判断是否需要更新
@@ -148,9 +196,9 @@ namespace DZ_Update.Control
 
             String localUpdateFile = Path.Combine(lastestDir, UpdateDefine.SubUpdateJsonFileName);
             HttpFileUtil.DownloadFile(localUpdateFile, _mainUpdateInfo.GetSubUpdateJsonPath(needVersion));//updateAll.json
-            _subUpdateInfo = JsonConvert.DeserializeObject<SubUpdateJson>(File.ReadAllText(localUpdateFile));
+            SubUpdateJson subUpdateInfo = JsonConvert.DeserializeObject<SubUpdateJson>(File.ReadAllText(localUpdateFile));
 
-
+            progressAction?.Invoke(2);
 
             String currentClientVersion = VersionTool.GetClientVersion();
             //备份文件
@@ -159,8 +207,13 @@ namespace DZ_Update.Control
                 Directory.CreateDirectory(currentVersionBackupDir);
 
             //从更新配置中获取 哪些文件需要备份
-            foreach (var item in _subUpdateInfo.FileList)
+            int fileCount = 0;
+            foreach (var item in subUpdateInfo.FileList)
             {
+                String sourceFile = Path.Combine(Environment.CurrentDirectory, item.Path);
+                if (!File.Exists(sourceFile))
+                    continue;
+
                 //拷贝文件
                 //判断是否在二级目录
                 if (item.Path.Contains(Path.DirectorySeparatorChar))
@@ -170,46 +223,54 @@ namespace DZ_Update.Control
                 }
 
                 //复制文件
-                String sourceFile = Path.Combine(Environment.CurrentDirectory, item.Path);
                 String destFile = Path.Combine(currentVersionBackupDir, item.Path);
+                File.Copy(sourceFile, destFile, true);
 
-                if (File.Exists(sourceFile))
-                    File.Copy(sourceFile, destFile, true);
+                //计算比例
+                fileCount++;
+                progressAction?.Invoke(Convert.ToInt32((fileCount * 1.0 / subUpdateInfo.FileList.Count * 100 * (10 / 100.0))));
             }
 
+            progressAction?.Invoke(10);
+
             //下载文件   整个压缩包
-            String updateVersionDir = Path.Combine(_updateDir, _subUpdateInfo.CurrentVersion);
+            String updateVersionDir = Path.Combine(_updateDir, subUpdateInfo.CurrentVersion);
             if (!Directory.Exists(updateVersionDir))
                 Directory.CreateDirectory(updateVersionDir);
 
             //尝试三次
             bool downloadSuc = false;
-            String localZipFile = Path.Combine(updateVersionDir, $"{_subUpdateInfo.CurrentVersion}.zip");
-            String remoteZipFile = Path.Combine(_subUpdateInfo.CurrentVersion, $"{_subUpdateInfo.CurrentVersion}.zip");
-            for (int i = 0; i < 3; i++)
-            {
-                HttpFileUtil.DownloadFile(localZipFile, remoteZipFile);
-                //解压文件  比对压缩包MD5
-                String zipMD5 = CalcMD5Tool.CalcFileMD5(localZipFile);
-                RemoteFileInfo zipInfo = _subUpdateInfo.FileList.FirstOrDefault(a => a.FileName.Equals($"{_subUpdateInfo.CurrentVersion}.zip"));
-                if (zipInfo != null)
-                {
-                    String remoteMD5 = zipInfo.MD5;
-                    if (remoteMD5.ToLower().Equals(zipMD5.ToLower()))
-                    {
-                        downloadSuc = true;
-                        break;
-                    }
 
+            String localZipFile = Path.Combine(updateVersionDir, $"{subUpdateInfo.CurrentVersion}.zip");
+            String remoteZipFile = Path.Combine(subUpdateInfo.CurrentVersion, $"{subUpdateInfo.CurrentVersion}.zip");
+
+            HttpFileUtil.DownloadFile(localZipFile, remoteZipFile, (ratio) =>
+            {
+                progressAction?.Invoke(10 + Convert.ToInt32(ratio * (87 / 100.0)));
+            });
+
+            //解压文件  比对压缩包MD5
+            String zipMD5 = CalcMD5Tool.CalcFileMD5(localZipFile);
+            RemoteFileInfo zipInfo = subUpdateInfo.FileList.FirstOrDefault(a => a.FileName.Equals($"{subUpdateInfo.CurrentVersion}.zip"));
+            if (zipInfo != null)
+            {
+                String remoteMD5 = zipInfo.MD5;
+                if (remoteMD5.ToLower().Equals(zipMD5.ToLower()))
+                {
+                    downloadSuc = true;
                 }
             }
-            if (downloadSuc == false)
-                throw new Exception("更新文件下载失败，请1小时后重试！");
 
+            if (downloadSuc == false)
+                throw new Exception("更新文件下载失败，请重试！");
+
+            progressAction?.Invoke(98);
             //解压文件
             ZipTool.UnZip(localZipFile, updateVersionDir);
             //删除zip文件
             File.Delete(localZipFile);
+
+            progressAction?.Invoke(99);
             //覆盖文件
             DirFileOperateTool.CopyDirectory(updateVersionDir, Environment.CurrentDirectory);
             //删除运行目录多余的 update.json
@@ -217,17 +278,34 @@ namespace DZ_Update.Control
             if (File.Exists(jsonFile))
                 File.Delete(jsonFile);
             //修改本地版本
-            VersionTool.UpdateLocalVersion(_subUpdateInfo.CurrentVersion);
+            VersionTool.UpdateLocalVersion(subUpdateInfo.CurrentVersion);
+            progressAction?.Invoke(100);
+
         }
         /// <summary>
         /// 回退到上一版本
         /// </summary>
-        public void RevertToPreviousVersion()
+        public void RevertToPreviousVersion(Action<int> progressAction)
         {
             //找到备份文件夹中的最新版本
+            if (!Directory.Exists(_updateBackupDir))
+                throw new Exception("没有版本备份，无法执行回退操作！");
+
             var dirArray = Directory.GetDirectories(_updateBackupDir);
             if (!dirArray.ExistData())
                 throw new Exception("没有版本备份，无法执行回退操作！");
+
+            progressAction?.Invoke(5);
+            //删除更新文件  再用旧文件覆盖
+            //找到最新版本更新的文件列表
+            foreach (var item in _subUpdateInfoList.Last().FileList)
+            {
+                String localFile = Path.Combine(Environment.CurrentDirectory, item.Path);
+                if (File.Exists(localFile))
+                    File.Delete(localFile);
+            }
+            progressAction?.Invoke(10);
+
             //排序
             var dirList = dirArray.ToList();
             dirList.Sort();
@@ -235,53 +313,58 @@ namespace DZ_Update.Control
             String lastDir = dirList.Last();
 
             //直接覆盖文件
-            DirFileOperateTool.CopyDirectory(lastDir, Environment.CurrentDirectory);
+            int totalFileCount = Directory.GetFiles(lastDir, "*", SearchOption.AllDirectories).Length;
+            int copyFileCount = 0;
+            DirFileOperateTool.CopyDirectory(lastDir, Environment.CurrentDirectory, a =>
+            {
+                //计算 比例
+                copyFileCount += a;
+                progressAction?.Invoke(Convert.ToInt32((copyFileCount * 1.0 / totalFileCount) * 89));
+            });
+
+            progressAction?.Invoke(99);
             //修改本地版本
             VersionTool.UpdateLocalVersion(Path.GetFileName(lastDir));
+            progressAction?.Invoke(100);
+
         }
         /// <summary>
         /// 修复本地文件
         /// </summary>
-        public void RepairClientAllFile()
+        public int RepairClientAllFile(Action<int> progressAction)
         {
             //文件名-文件路径
             List<RemoteFileInfo> needDownloadFileList = new List<RemoteFileInfo>();
 
-            //获取所有文件 计算 MD5
-            var files = Directory.GetFiles(Environment.CurrentDirectory, "*", SearchOption.AllDirectories);
-            foreach (var file in files)
-            {
-                String MD5 = CalcMD5Tool.CalcFileMD5(file);
-
-                //从服务器获取MD5
-                RemoteFileInfo fileInfo = _mainUpdateInfo.FileList.FirstOrDefault(a => a.FileName.Equals(Path.GetFileName(file)));
-                if (fileInfo != null)
-                {
-                    //判断MD5是否一致
-                    if (!MD5.ToLower().Equals(fileInfo.MD5.ToLower()))
-                    {
-                        needDownloadFileList.Add(fileInfo);
-                    }
-                }
-            }
-            //找到本地文件没有  但是远程有的文件
+            //直接以发布json为主
             foreach (var item in _mainUpdateInfo.FileList)
             {
                 //压缩包跳过
                 if (item.FileName.Contains("zip"))
                     continue;
 
-                String file = files.FirstOrDefault(a => Path.GetFileName(a).Equals(item.FileName));
-                if (String.IsNullOrEmpty(file))
+                String localFile = Path.Combine(Environment.CurrentDirectory, item.Path);
+                if (!File.Exists(localFile))
+                {
+                    needDownloadFileList.Add(item);
+                    continue;
+                }
+
+                //比较md5
+                String md5 = CalcMD5Tool.CalcFileMD5(localFile);
+                //判断MD5是否一致
+                if (!md5.ToLower().Equals(item.MD5.ToLower()))
                 {
                     needDownloadFileList.Add(item);
                 }
             }
 
             //下载文件
-
             if (!needDownloadFileList.ExistData())
-                return;
+            {
+                progressAction?.Invoke(100);
+                return 0;
+            }
 
             String allUpdateDir = Path.Combine(_updateDir, "allUpdate");
             if (Directory.Exists(allUpdateDir))
@@ -289,26 +372,38 @@ namespace DZ_Update.Control
 
             Directory.CreateDirectory(allUpdateDir);
 
-            foreach (var item in needDownloadFileList)
+            progressAction?.Invoke(10);
+
+            double progressRatio = 0.89 / needDownloadFileList.Count;
+            for (int i = 0; i < needDownloadFileList.Count; i++)
             {
+                var item = needDownloadFileList[i];
                 String localFile = Path.Combine(allUpdateDir, item.Path);
                 String remoteFile = item.GetRemoteFilePath();
 
-                HttpFileUtil.DownloadFile(localFile, remoteFile);
+                HttpFileUtil.DownloadFile(localFile, remoteFile, a =>
+                {
+                    int aa = Convert.ToInt32(progressRatio * a + (progressRatio * i * 100));
+                    Console.WriteLine(aa);
+                    progressAction?.Invoke(aa);
+                });
                 //计算MD5是否一致
                 String md5 = CalcMD5Tool.CalcFileMD5(localFile);
                 if (!md5.Equals(item.MD5))
                 {
-                    //不相等  重下一次
-                    HttpFileUtil.DownloadFile(localFile, remoteFile);
+                    //不相等
+                    throw new Exception("文件下载失败，请重试！");
                 }
             }
 
+            progressAction?.Invoke(99);
             //覆盖文件
             DirFileOperateTool.CopyDirectory(allUpdateDir, Environment.CurrentDirectory);
             Directory.Delete(allUpdateDir, true);
             //修改本地版本
             VersionTool.UpdateLocalVersion(_mainUpdateInfo.LatestVersion);
+            progressAction?.Invoke(100);
+            return needDownloadFileList.Count;
         }
     }
 

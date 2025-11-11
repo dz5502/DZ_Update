@@ -76,7 +76,7 @@ namespace DZ_Update_CommonTools
             dir.SetAccessControl(dirSecurity);
         }
 
-        public static void CopyDirectory(string sourceDir, string targetDir)
+        public static void CopyDirectory(string sourceDir, string targetDir, Action<int> copyFileCountActtion = null)
         {
             DirectoryInfo dir = new DirectoryInfo(sourceDir);
             DirectoryInfo[] dirs = dir.GetDirectories();
@@ -99,6 +99,7 @@ namespace DZ_Update_CommonTools
             {
                 string tempPath = Path.Combine(targetDir, file.Name);
                 file.CopyTo(tempPath, true);
+                copyFileCountActtion?.Invoke(1);
             }
 
             // If copying subdirectories, copy them and their contents to the new location.
@@ -107,6 +108,12 @@ namespace DZ_Update_CommonTools
                 string tempPath = Path.Combine(targetDir, subdir.Name);
                 CopyDirectory(subdir.FullName, tempPath);
             }
+        }
+
+        public static long GetFileLen(String filename)
+        {
+            FileInfo fileInfo = new FileInfo(filename);
+            return fileInfo.Length;
         }
     }
 }
