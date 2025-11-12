@@ -5,21 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DZ_Update_ServerFileManager" xmlns:controls="clr-namespace:DZ_Update_ServerFileManager.Views.Controls"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
-        Title="MainWindow" Height="600" Width="800">
+        Title="MainWindow" Height="600" Width="850">
     <Window.Resources>
     </Window.Resources>
 
     <Grid Margin="20,0,20,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="80"></RowDefinition>
-            <RowDefinition Height="120"></RowDefinition>
+            <RowDefinition Height="150"></RowDefinition>
             <RowDefinition Height="10*"></RowDefinition>
         </Grid.RowDefinitions>
 
         <StackPanel VerticalAlignment="Center">
             <TextBlock>文件发布目录</TextBlock>
             <StackPanel Orientation="Horizontal" Height="26">
-                <TextBox Text="{Binding HttpFileManagerDir}" Width="500" FontSize="15" IsReadOnly="True"></TextBox>
+                <TextBox Text="{Binding SelectedPathRecord.PublishPath}" Width="500" FontSize="15" IsReadOnly="True"></TextBox>
                 <Button  Command="{Binding OpenHttpFileDirCommand}">......</Button>
             </StackPanel>
         </StackPanel>
@@ -30,6 +30,7 @@
                 <ColumnDefinition Width="10*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="10*"></RowDefinition>
                 <RowDefinition Height="10*"></RowDefinition>
                 <RowDefinition Height="10*"></RowDefinition>
             </Grid.RowDefinitions>
@@ -53,13 +54,19 @@
             </StackPanel>
 
 
-            <TextBlock Grid.Row="1" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Right">待更新文件路径：</TextBlock>
-
-            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Height="26" VerticalAlignment="Center">
-                <TextBox Text="{Binding SourceFileDir}" Width="450" FontSize="15"></TextBox>
+            <TextBlock Grid.Row="2" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Right">待更新文件路径：</TextBlock>
+            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Height="26" VerticalAlignment="Center">
+                <TextBox Text="{Binding SelectedPathRecord.SourceFileDir}" Width="450" FontSize="15"></TextBox>
                 <Button  Command="{Binding OpenSourceFileDirCommand}">......</Button>
 
                 <Button Command="{Binding GenerateUpdateFileCommand}" Margin="20,0,0,0">生成版本文件</Button>
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" Text="忽略列表文件：" FontSize="15" HorizontalAlignment="Right" VerticalAlignment="Center"></TextBlock>
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBox Text="{Binding SelectedPathRecord.IgnoreFile}" Width="450" FontSize="15"></TextBox>
+                <Button  Command="{Binding OpenFilterFileCommand}">......</Button>
+                <TextBlock Text="(按行读取，按文件名筛选)" FontSize="15" Margin="0,0,0,0"></TextBlock>
             </StackPanel>
 
         </Grid>

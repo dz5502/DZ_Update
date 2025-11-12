@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using DZ_Update.ServerFileManager.Models;
 using DZ_Update_CommonTools;
 using DZ_Update_Models;
 using DZ_Update_Models.update;
@@ -30,15 +31,43 @@ namespace DZ_Update_ServerFileManager
     public partial class MainWindow : Window, IBaseViewModel
     {
         private MainUpdateJson _mainUpdateJson = null;
+        private String _appSettingFile = Path.Combine(Environment.CurrentDirectory, "Appsetting.json");
         public MainWindow()
         {
+            try
+            {
+                //在界面绑定之前  读取历史记录
+                if (File.Exists(_appSettingFile))
+                {
+                    SelectedPathRecord = JsonConvert.DeserializeObject<SelectedPathRecordModel>(File.ReadAllText(_appSettingFile));
+
+                    //自动填充历史最新版本
+                    var strs = SelectedPathRecord.LatestVersion.Split('.');
+                    this.VersionA = strs[0];
+                    this.VersionB = strs[1];
+                    this.VersionC = strs[2];
+                    this.VersionD = strs[3];
+                }
+            }
+            catch (Exception)
+            {
+            }
+
             InitializeComponent();
             this.DataContext = this;
 
 
             this.userTable.SetTableData(UserTableData);
             this.clientTypeTable.SetTableData(ClientTypeTableData);
-            this.updateInfoTable.SetTableData(UpdateInfoData);            
+            this.updateInfoTable.SetTableData(UpdateInfoData);    
+            
+
+        }
+
+        ~MainWindow()
+        {
+            //保存选择的路径  下次自动填充
+            File.WriteAllText(_appSettingFile, JsonConvert.SerializeObject(SelectedPathRecord));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -48,19 +77,11 @@ namespace DZ_Update_ServerFileManager
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p));
         }
 
-
-        private String _httpFileManagerDir;
-        public String HttpFileManagerDir
+        private SelectedPathRecordModel _selectedPathRecord = new SelectedPathRecordModel();
+        public SelectedPathRecordModel SelectedPathRecord 
         {
-            get { return this._httpFileManagerDir; }
-            set { this._httpFileManagerDir = value; NotifyPropertyChanged(); }
-        }
-
-        private String _sourceFileDir;
-        public String SourceFileDir
-        {
-            get { return this._sourceFileDir; }
-            set { this._sourceFileDir = value; NotifyPropertyChanged(); }
+            get { return _selectedPathRecord; }
+            set { this._selectedPathRecord = value; NotifyPropertyChanged(); }
         }
 
         private String _versionA;
@@ -88,7 +109,7 @@ namespace DZ_Update_ServerFileManager
             set { this._versionD = value; NotifyPropertyChanged(); }
         }
 
-        private bool _enableGeneratePanel;
+        private bool _enableGeneratePanel = true;
         public bool EnableGeneratePanel
         {
             get { return this._enableGeneratePanel; }
@@ -130,9 +151,31 @@ namespace DZ_Update_ServerFileManager
             set { this._firstVersionFile = value; NotifyPropertyChanged(); }
         }
 
+        public BaseCommand OpenFilterFileCommand { get { return new BaseCommand(OpenFilterFile); } }
         public BaseCommand OpenHttpFileDirCommand { get { return new BaseCommand(OpenHttpFileDir); } }
         public BaseCommand OpenSourceFileDirCommand { get { return new BaseCommand(OpenSourceFileDir); } }
         public BaseCommand GenerateUpdateFileCommand { get { return new BaseCommand(GenerateUpdateFile); } }
+
+        private void OpenFilterFile(object obj)
+        {
+            try
+            {
+                String file = String.Empty;
+                if (OpenFileHelper.OpenFile("", "打开忽略文件(*.txt)|*.txt", ref file) == false)
+                {
+                    return;
+                }
+
+                if (File.Exists(file) == false)
+                    throw new Exception("所选文件不存在，请重新选择！");
+
+                SelectedPathRecord.IgnoreFile = file;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
 
         private void GenerateUpdateFile(object obj)
         {
@@ -145,14 +188,16 @@ namespace DZ_Update_ServerFileManager
                     throw new Exception("请出入正确的版本号");
                 }
 
-                if (!Directory.Exists(HttpFileManagerDir))
+                if (!Directory.Exists(SelectedPathRecord.PublishPath))
                     throw new Exception("请先选择正确的需要更新的文件存放目录");
-                if (!Directory.Exists(SourceFileDir))
+                if (!Directory.Exists(SelectedPathRecord.SourceFileDir))
                     throw new Exception("请先选择正确的需要更新的文件原始目录");
 
+                if(!UpdateInfoData.ExistData())
+                    throw new Exception("请添加更新日志！");
 
                 //判断 updateAll 是否存在  不存在则自动生成
-                String mainUpdateJsonFile = System.IO.Path.Combine(HttpFileManagerDir, UpdateDefine.MainUpdateJsonFileName);
+                String mainUpdateJsonFile = System.IO.Path.Combine(SelectedPathRecord.PublishPath, UpdateDefine.MainUpdateJsonFileName);
                 //一般执行这步在项目第一次创建  
                 if (!File.Exists(mainUpdateJsonFile))
                 {
@@ -168,14 +213,22 @@ namespace DZ_Update_ServerFileManager
 
                 SubUpdateJson subUpdateJson = new SubUpdateJson();
                 //从选择的源文件夹 生成
-                var files = Directory.GetFiles(SourceFileDir, "*", SearchOption.AllDirectories);
+                var files = Directory.GetFiles(SelectedPathRecord.SourceFileDir, "*", SearchOption.AllDirectories);
                 _mainUpdateJson.LatestVersion = versionDirName;
                 _mainUpdateJson.VersionList.Add(_mainUpdateJson.LatestVersion);
 
+                //忽略文件列表
+                String[] IgnoreFileList =  File.ReadAllLines(SelectedPathRecord.IgnoreFile);
+
                 foreach (var file in files)
                 {
+                    //只根据名字判断
+                    String ignoreFile = IgnoreFileList.FirstOrDefault(a => a.Equals(System.IO.Path.GetFileName(file)));
+                    if(!String.IsNullOrEmpty(ignoreFile))
+                        continue;
+
                     //可能存在不同目录  相同文件名的情况
-                    String relativePath = file.Replace(SourceFileDir, "").Trim(Path.DirectorySeparatorChar);
+                    String relativePath = file.Replace(SelectedPathRecord.SourceFileDir, "").Trim(Path.DirectorySeparatorChar);
                     RemoteFileInfo remoteFileInfo = _mainUpdateJson.FileList.FirstOrDefault(a=>
                     {
                         return a.FileName.Equals(System.IO.Path.GetFileName(file)) && a.Path.Equals(relativePath);
@@ -198,7 +251,7 @@ namespace DZ_Update_ServerFileManager
                 File.WriteAllText(mainUpdateJsonFile, JsonConvert.SerializeObject(_mainUpdateJson, Formatting.Indented));
                 //生成具体的更新文件
                 //创建文件夹
-                String versionDir = System.IO.Path.Combine(HttpFileManagerDir, versionDirName);
+                String versionDir = System.IO.Path.Combine(SelectedPathRecord.PublishPath, versionDirName);
                 if (Directory.Exists(versionDir))
                     Directory.Delete(versionDir);
 
@@ -233,14 +286,14 @@ namespace DZ_Update_ServerFileManager
                 }
 
                 //拷贝其他文件  到更讯目录
-                DirFileOperateTool.CopyDirectory(SourceFileDir, versionDir);
+                DirFileOperateTool.CopyDirectory(SelectedPathRecord.SourceFileDir, versionDir, IgnoreFileList.ToList());
 
                 if (!FirstVersionFile)
                 {
                     //生成压缩包
-                    var zipFiles = Directory.GetFiles(versionDir, "*", SearchOption.AllDirectories);
+                    //var zipFiles = Directory.GetFiles(versionDir, "*", SearchOption.AllDirectories);
                     String zipFile = Path.Combine(versionDir, $"{versionDirName}.zip");
-                    ZipTool.CreateZipDir(versionDir, zipFile);
+                    ZipTool.CreateZipDir(versionDir, zipFile, IgnoreFileList.ToList());
 
                     RemoteFileInfo zipFileInfo = new RemoteFileInfo();
                     zipFileInfo.FileName = System.IO.Path.GetFileName(zipFile);
@@ -253,6 +306,7 @@ namespace DZ_Update_ServerFileManager
                 String subUpdateJsonFile = Path.Combine(versionDir, UpdateDefine.SubUpdateJsonFileName);
                 File.WriteAllText(subUpdateJsonFile, JsonConvert.SerializeObject(subUpdateJson, Formatting.Indented));
 
+                SelectedPathRecord.LatestVersion = versionDirName;
                 MessageBox.Show("成功生成版本文件！");
             }
             catch (Exception ex)
@@ -272,11 +326,11 @@ namespace DZ_Update_ServerFileManager
                 }
 
                 //至少必须存在一个版本文件夹（包含所有文件的初始文件夹）
-                var dirs = Directory.GetDirectories(dir, "*", SearchOption.TopDirectoryOnly);
-                if (dirs.ExistData() == false)
+                var files = Directory.GetFiles(dir, "*", SearchOption.TopDirectoryOnly);
+                if (files.ExistData() == false)
                     throw new Exception("所选文件夹为空，请重新选择！");
 
-                SourceFileDir = dir;
+                SelectedPathRecord.SourceFileDir = dir;
             }
             catch (Exception ex)
             {
@@ -308,7 +362,7 @@ namespace DZ_Update_ServerFileManager
                     try
                     {
                         _mainUpdateJson = JsonConvert.DeserializeObject<MainUpdateJson>(File.ReadAllText(mainUpdateJson));
-
+                        SelectedPathRecord.LatestVersion = _mainUpdateJson.LatestVersion;
                         //自动填充历史最新版本
                         var strs = _mainUpdateJson.LatestVersion.Split('.');
                         this.VersionA = strs[0];
@@ -322,9 +376,9 @@ namespace DZ_Update_ServerFileManager
                         throw new Exception($"更新文件{mainUpdateJson}损坏！");
                     }
                 }
-                
 
-                HttpFileManagerDir = dir;
+
+                SelectedPathRecord.PublishPath = dir;
                 EnableGeneratePanel = true;
             }
             catch (Exception ex)

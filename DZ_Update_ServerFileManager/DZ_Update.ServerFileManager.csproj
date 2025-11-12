@@ -62,6 +62,7 @@
     </ApplicationDefinition>
     <Compile Include="Models\BaseTableDataItem.cs" />
     <Compile Include="Models\ClientTypeTableDataItem.cs" />
+    <Compile Include="Models\SelectedPathRecordModel.cs" />
     <Compile Include="Views\Controls\UCDateGrid.xaml.cs">
       <DependentUpon>UCDateGrid.xaml</DependentUpon>
     </Compile>

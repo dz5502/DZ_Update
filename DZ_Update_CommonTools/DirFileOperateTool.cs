@@ -110,6 +110,45 @@ namespace DZ_Update_CommonTools
             }
         }
 
+
+        public static void CopyDirectory(string sourceDir, string targetDir, List<String> ignoreFileList)
+        {
+            DirectoryInfo dir = new DirectoryInfo(sourceDir);
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            // If the source directory does not exist, throw an exception.
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException($"Source directory does not exist or could not be found: {sourceDir}");
+            }
+
+            // If the destination directory does not exist, create it.
+            if (!Directory.Exists(targetDir))
+            {
+                Directory.CreateDirectory(targetDir);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                if (ignoreFileList.Exists(a => a.Equals(file.Name)))
+                    continue;
+
+                string tempPath = Path.Combine(targetDir, file.Name);
+                file.CopyTo(tempPath, true);
+            }
+
+            // If copying subdirectories, copy them and their contents to the new location.
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string tempPath = Path.Combine(targetDir, subdir.Name);
+                CopyDirectory(subdir.FullName, tempPath);
+            }
+        }
+
+
+
         public static long GetFileLen(String filename)
         {
             FileInfo fileInfo = new FileInfo(filename);

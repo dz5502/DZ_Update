@@ -148,7 +148,7 @@ namespace DZ_Update_CommonTools
 
         }
 
-        public static void CreateZipDir(String rootDir, string zipFile)
+        public static void CreateZipDir(String rootDir, string zipFile, List<String> ignoreFileList)
         {
             var files = Directory.GetFiles(rootDir, "*", SearchOption.AllDirectories);
             byte[] buffer = new byte[1024 * 1024]; //缓冲区大小
@@ -158,6 +158,11 @@ namespace DZ_Update_CommonTools
             stream.SetLevel(9); // 压缩级别 0-9
             foreach (string file in files)
             {
+                //只根据名字判断
+                String ignoreFile = ignoreFileList.FirstOrDefault(a => a.Equals(System.IO.Path.GetFileName(file)));
+                if (!String.IsNullOrEmpty(ignoreFile))
+                    continue;
+
                 FileInfo fileInfo = new FileInfo(file);
                 String entryName = file.Replace(rootDir, "").Trim(Path.DirectorySeparatorChar);
                 ZipEntry entry = new ZipEntry(entryName); //压缩包中展示的文件名  Path.GetFileName(file)
