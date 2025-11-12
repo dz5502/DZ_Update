@@ -40,13 +40,7 @@ namespace DZ_Update_ServerFileManager
                 if (File.Exists(_appSettingFile))
                 {
                     SelectedPathRecord = JsonConvert.DeserializeObject<SelectedPathRecordModel>(File.ReadAllText(_appSettingFile));
-
-                    //自动填充历史最新版本
-                    var strs = SelectedPathRecord.LatestVersion.Split('.');
-                    this.VersionA = strs[0];
-                    this.VersionB = strs[1];
-                    this.VersionC = strs[2];
-                    this.VersionD = strs[3];
+                    this.InitProjectData();
                 }
             }
             catch (Exception)
@@ -346,44 +340,41 @@ namespace DZ_Update_ServerFileManager
                 if (OpenFileHelper.OpenDir(out dir) == false)
                 {
                     return;
-                }
-
-                ////至少必须存在一个版本文件夹（包含所有文件的初始文件夹）
-                //var dirs = Directory.GetDirectories(dir, "*", SearchOption.TopDirectoryOnly);
-                //if (dirs.ExistData() == false)
-                //    throw new Exception("所选文件夹为空，没有版本路径文件，无法作为更新存放目录！");
-
-                //读取updateall 
-                //判断 updateAll 是否存在  
-                String mainUpdateJson = System.IO.Path.Combine(dir, UpdateDefine.MainUpdateJsonFileName);
-                //一般执行这步在项目第一次创建  
-                if (File.Exists(mainUpdateJson))
-                {
-                    try
-                    {
-                        _mainUpdateJson = JsonConvert.DeserializeObject<MainUpdateJson>(File.ReadAllText(mainUpdateJson));
-                        SelectedPathRecord.LatestVersion = _mainUpdateJson.LatestVersion;
-                        //自动填充历史最新版本
-                        var strs = _mainUpdateJson.LatestVersion.Split('.');
-                        this.VersionA = strs[0];
-                        this.VersionB = strs[1];
-                        this.VersionC = strs[2];
-                        this.VersionD = strs[3];
-                    }
-                    catch (Exception )
-                    {
-
-                        throw new Exception($"更新文件{mainUpdateJson}损坏！");
-                    }
-                }
-
+                }            
 
                 SelectedPathRecord.PublishPath = dir;
+                this.InitProjectData();
                 EnableGeneratePanel = true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void InitProjectData()
+        {
+            //读取updateall 
+            //判断 updateAll 是否存在  
+            String mainUpdateJson = System.IO.Path.Combine(SelectedPathRecord.PublishPath, UpdateDefine.MainUpdateJsonFileName);
+            //一般执行这步在项目第一次创建  
+            if (File.Exists(mainUpdateJson))
+            {
+                try
+                {
+                    _mainUpdateJson = JsonConvert.DeserializeObject<MainUpdateJson>(File.ReadAllText(mainUpdateJson));
+                    SelectedPathRecord.LatestVersion = _mainUpdateJson.LatestVersion;
+                    //自动填充历史最新版本
+                    var strs = _mainUpdateJson.LatestVersion.Split('.');
+                    this.VersionA = strs[0];
+                    this.VersionB = strs[1];
+                    this.VersionC = strs[2];
+                    this.VersionD = strs[3];
+                }
+                catch (Exception)
+                {
+                    throw new Exception($"更新文件{mainUpdateJson}损坏！");
+                }
             }
         }
     }
