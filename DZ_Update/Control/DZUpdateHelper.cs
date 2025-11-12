@@ -168,7 +168,7 @@ namespace DZ_Update.Control
             for (int i = currentVersionIndex + 1; i < _mainUpdateInfo.VersionList.Count; i++)
             {
                 String needVersion = _mainUpdateInfo.VersionList[i];
-                Console.WriteLine(Environment.NewLine + $"更新版本{needVersion}中...");
+                Console.Write(Environment.NewLine + $"更新版本{needVersion}中...");
                 DoUpdate(needVersion, a =>
                 {
                     int currentProgress = Convert.ToInt32((a * oneProgressRatio) + (oneProgressRatio * versionCount * 100));
@@ -177,6 +177,7 @@ namespace DZ_Update.Control
                 });
 
                 versionCount++;
+                Console.WriteLine();
             }
 
         }
@@ -269,6 +270,7 @@ namespace DZ_Update.Control
             ZipTool.UnZip(localZipFile, updateVersionDir);
             //删除zip文件
             File.Delete(localZipFile);
+            this.SelfUpdate(updateVersionDir);
 
             progressAction?.Invoke(99);
             //覆盖文件
@@ -315,6 +317,8 @@ namespace DZ_Update.Control
             //直接覆盖文件
             int totalFileCount = Directory.GetFiles(lastDir, "*", SearchOption.AllDirectories).Length;
             int copyFileCount = 0;
+
+            this.SelfUpdate(lastDir);//自更新判断
             DirFileOperateTool.CopyDirectory(lastDir, Environment.CurrentDirectory, a =>
             {
                 //计算 比例
@@ -404,6 +408,35 @@ namespace DZ_Update.Control
             VersionTool.UpdateLocalVersion(_mainUpdateInfo.LatestVersion);
             progressAction?.Invoke(100);
             return needDownloadFileList.Count;
+        }
+
+        /// <summary>
+        /// 自更新
+        /// </summary>
+        private void SelfUpdate(String updateDir)
+        {
+            //判断更新文件中 是否包含本程序
+            List<String> filterFileList = new List<String>() { "DZ_Update.exe", "DZ_Update.Models.dll", "DZ_Update.CommonTools.dll" };
+
+            var files = Directory.GetFiles(updateDir, "*", SearchOption.AllDirectories);
+
+            foreach (String file in filterFileList)
+            {
+                String needUpdateFile = files.FirstOrDefault(f => Path.GetFileName(f).Equals(file));
+                if (!String.IsNullOrEmpty(needUpdateFile))
+                {
+                    //将运行目录的程序改名
+                    String file_source = Path.Combine(Environment.CurrentDirectory, file);
+                    String file_back = Path.Combine(Environment.CurrentDirectory, file + ".back");
+                    if(File.Exists(file_back))
+                        File.Delete(file_back);
+
+                    File.Move(file_source, file_back);
+                }
+            }
+
+            //继续执行其他正常复制即可
+            return;
         }
     }
 

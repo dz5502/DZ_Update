@@ -373,6 +373,7 @@ namespace DZ_Update_ServerFileManager
                 }
                 catch (Exception)
                 {
+                    MessageBox.Show($"更新文件{mainUpdateJson}损坏！");
                     throw new Exception($"更新文件{mainUpdateJson}损坏！");
                 }
             }

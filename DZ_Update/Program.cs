@@ -16,6 +16,8 @@ namespace DZ_Update
             if (!needUpdate)
             {
                 Console.WriteLine("不存在更新");
+                Console.WriteLine("输入任意字符结束！");
+                Console.ReadKey();
                 return;
             }
 
