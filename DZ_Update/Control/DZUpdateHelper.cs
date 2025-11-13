@@ -396,12 +396,13 @@ namespace DZ_Update.Control
                 if (!md5.Equals(item.MD5))
                 {
                     //不相等
-                    throw new Exception("文件下载失败，请重试！");
+                    throw new Exception($"文件 {item.FileName} 下载失败，请重试！");
                 }
             }
 
             progressAction?.Invoke(99);
             //覆盖文件
+            this.SelfUpdate(allUpdateDir);//自更新判断
             DirFileOperateTool.CopyDirectory(allUpdateDir, Environment.CurrentDirectory);
             Directory.Delete(allUpdateDir, true);
             //修改本地版本
