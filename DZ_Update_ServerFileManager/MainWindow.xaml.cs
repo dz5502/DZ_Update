@@ -212,7 +212,11 @@ namespace DZ_Update_ServerFileManager
                 _mainUpdateJson.VersionList.Add(_mainUpdateJson.LatestVersion);
 
                 //忽略文件列表
-                String[] IgnoreFileList =  File.ReadAllLines(SelectedPathRecord.IgnoreFile);
+                List<String> IgnoreFileList = new List<string>();
+                if (!String.IsNullOrEmpty(SelectedPathRecord.IgnoreFile) && (File.Exists(SelectedPathRecord.IgnoreFile)))
+                {
+                    IgnoreFileList.AddRange( File.ReadAllLines(SelectedPathRecord.IgnoreFile));
+                }
 
                 foreach (var file in files)
                 {
