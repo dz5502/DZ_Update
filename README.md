@@ -15,7 +15,7 @@
 6. 针对固定用户更新（暂不支持）
 7. 强制更新
 8. 支持文件下载进度显示
-9. 自更新（暂不支持）
+9. 自更新
 
 ## 文件固有约定
 ### 文件层级说明
@@ -42,6 +42,6 @@
 
 # DZ_Update_ServerFileManager
 用于构建服务器端更新文件，保持文件结构与客户端固定约束。自动生成更新说明json文件。
-
+支持文件过滤。
 <img width="1284" height="813" alt="image" src="https://github.com/user-attachments/assets/f8e2fd96-793d-4fdb-bb0d-aa166b8ec907" />
 
