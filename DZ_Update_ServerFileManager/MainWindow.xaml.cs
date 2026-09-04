@@ -15,7 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using DZ_Update.Control;
+using DZ_Update.Core;
 using DZ_Update.ServerFileManager.Models;
 using DZ_Update_CommonTools;
 using DZ_Update_Models;
