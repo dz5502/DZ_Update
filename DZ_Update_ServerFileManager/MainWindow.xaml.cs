@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using DZ_Update.Control;
 using DZ_Update.ServerFileManager.Models;
 using DZ_Update_CommonTools;
 using DZ_Update_Models;
@@ -49,6 +50,11 @@ namespace DZ_Update_ServerFileManager
 
             InitializeComponent();
             this.DataContext = this;
+
+            foreach (var item in VersionTool.GetUploadServerList())
+            {
+                UrlList.Add(item);
+            }
 
 
             this.userTable.SetTableData(UserTableData);
@@ -145,10 +151,82 @@ namespace DZ_Update_ServerFileManager
             set { this._firstVersionFile = value; NotifyPropertyChanged(); }
         }
 
+
+
+        private String _url;
+        public String Url
+        {
+            get { return this._url; }
+            set { this._url = value; NotifyPropertyChanged(); }
+        }
+
+        public ObservableCollection<String> _urlList = new ObservableCollection<string>();
+
+        public ObservableCollection<String> UrlList
+        {
+            get { return this._urlList; }
+            set { this._urlList = value; NotifyPropertyChanged(); }
+        }
+
         public BaseCommand OpenFilterFileCommand { get { return new BaseCommand(OpenFilterFile); } }
         public BaseCommand OpenHttpFileDirCommand { get { return new BaseCommand(OpenHttpFileDir); } }
         public BaseCommand OpenSourceFileDirCommand { get { return new BaseCommand(OpenSourceFileDir); } }
         public BaseCommand GenerateUpdateFileCommand { get { return new BaseCommand(GenerateUpdateFile); } }
+        public BaseCommand UploadFileCommand { get { return new BaseCommand(UploadFile); } }
+
+        private void UploadFile(object obj)
+        {
+            try
+            {
+                if(String.IsNullOrEmpty(Url))
+                    throw new Exception("请选择服务器地址！");
+
+                if (MessageBox.Show($"请确认选择的地址：{Url}" + Environment.NewLine + "是否继续？", "", MessageBoxButton.YesNo) == MessageBoxResult.No)
+                {
+                    return;
+                }
+
+                VersionTool.SetHttpServer(Url);
+
+                //当前版本  文件是否存在
+                String versionDirName = $"{VersionA}.{VersionB}.{VersionC}.{VersionD}";
+                String localDir = Path.Combine(SelectedPathRecord.PublishPath, versionDirName);
+                if (!Directory.Exists(localDir))
+                    throw new Exception("请先生成版本文件！");
+
+                //判断服务器是否存在
+                var dirList = HttpFileUtil.GetDirList("");
+                if (dirList.paths.FirstOrDefault(a=>a.name.Equals(versionDirName)) != null)
+                {
+                    throw new Exception("服务器已存在该版本！");
+                }
+
+                //上传文件
+                //创建文件夹
+                var fileList = Directory.GetFiles(localDir, "*", SearchOption.AllDirectories);
+                foreach (var localFile in fileList)
+                {
+                    //跳过  mainUpdate 文件
+                    if (Path.GetFileName(localFile).Equals(UpdateDefine.MainUpdateJsonFileName))
+                        continue;
+
+                    String remoteFile = localFile.Replace(SelectedPathRecord.PublishPath, "");
+                    remoteFile = remoteFile.Replace('\\', '/');
+                    HttpFileUtil.UploadFile(localFile, remoteFile);
+                }
+
+                //上传  根目录文件
+                String mainUpdateJsonFile = System.IO.Path.Combine(SelectedPathRecord.PublishPath, UpdateDefine.MainUpdateJsonFileName);
+                //需要先删除服务器的 
+                HttpFileUtil.DeleteDirOrFile(UpdateDefine.MainUpdateJsonFileName);
+                HttpFileUtil.UploadFile(mainUpdateJsonFile, UpdateDefine.MainUpdateJsonFileName);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
 
         private void OpenFilterFile(object obj)
         {
@@ -303,6 +381,10 @@ namespace DZ_Update_ServerFileManager
 
                 String subUpdateJsonFile = Path.Combine(versionDir, UpdateDefine.SubUpdateJsonFileName);
                 File.WriteAllText(subUpdateJsonFile, JsonConvert.SerializeObject(subUpdateJson, Formatting.Indented));
+
+                //备份一个  mainUpdate   防止更新错后没有备份
+                String mainUpdateJsonFile_bck = Path.Combine(versionDir, UpdateDefine.MainUpdateJsonFileName);
+                File.Copy(mainUpdateJsonFile, mainUpdateJsonFile_bck);
 
                 SelectedPathRecord.LatestVersion = versionDirName;
                 MessageBox.Show("成功生成版本文件！");

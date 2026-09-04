@@ -60,9 +60,33 @@ namespace DZ_Update_CommonTools
             {
                 result = client.Put(req);
             }
+            else
+            {
+                result = client.Execute(req);
+
+            }
 
             return result;
         }
+
+        public static IRestResponse UploadFile(string url, String localFile, String token = "")
+        {
+            var client = new RestClient();
+            var request = new RestRequest(url, Method.PUT);
+            if (!String.IsNullOrEmpty(token))
+            {
+                request.AddHeader("Authorization", "Basic " + token);
+            }
+
+
+            var fileBytes = File.ReadAllBytes(localFile);
+            request.AddParameter("application/octet-stream", fileBytes, ParameterType.RequestBody);
+            var response = client.Execute(request);
+
+            return response;
+        }
+
+
 
         public static void DownloadFile(string url, String saveFile, Action<Int64> progressAction, string token="")
         {

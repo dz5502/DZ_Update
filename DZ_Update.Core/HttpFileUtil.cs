@@ -1,13 +1,15 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using DZ_Update_CommonTools;
 using DZ_Update_Models;
 using Newtonsoft.Json;
 using RestSharp;
 
-namespace DZ_Update.Control
+namespace DZ_Update.Core
 {
     public class HttpFileUtil
     {
@@ -51,6 +53,28 @@ namespace DZ_Update.Control
             Console.WriteLine();
             return true;
         }
+
+
+
+        public static bool UploadFile(String localFile, String remoteFile)
+        {
+            var result = HttpTool.UploadFile(VersionTool.GetHttpServer() + $"/{remoteFile}", localFile,  GetToken());
+            if ((result != null) && (!result.IsSuccessful))
+                throw new Exception(result.Content + result.ErrorMessage);
+
+            return true;
+        }
+
+        public static bool DeleteDirOrFile(String remoteDirPath)
+        {
+            var result = HttpTool.ClientConnect(VersionTool.GetHttpServer() + $"/{remoteDirPath}", Method.DELETE, null, GetToken());
+            if ((result != null) && (!result.IsSuccessful))
+                throw new Exception(result.Content + result.ErrorMessage);
+
+            return true;
+        }
+
+
 
 
         private static String GetToken()

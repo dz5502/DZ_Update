@@ -12,7 +12,7 @@
     <Grid Margin="20,0,20,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="80"></RowDefinition>
-            <RowDefinition Height="150"></RowDefinition>
+            <RowDefinition Height="160"></RowDefinition>
             <RowDefinition Height="10*"></RowDefinition>
         </Grid.RowDefinitions>
 
@@ -30,6 +30,7 @@
                 <ColumnDefinition Width="10*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="10*"></RowDefinition>
                 <RowDefinition Height="10*"></RowDefinition>
                 <RowDefinition Height="10*"></RowDefinition>
                 <RowDefinition Height="10*"></RowDefinition>
@@ -66,7 +67,17 @@
             <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBox Text="{Binding SelectedPathRecord.IgnoreFile}" Width="450" FontSize="15"></TextBox>
                 <Button  Command="{Binding OpenFilterFileCommand}">......</Button>
-                <TextBlock Text="(按行读取，按文件名筛选)" FontSize="15" Margin="0,0,0,0"></TextBlock>
+                <TextBlock Text="(按行读取，按文件名过滤)" FontSize="15" Margin="0,0,0,0"></TextBlock>
+            </StackPanel>
+
+
+
+            <TextBlock Grid.Row="3" Text="文件服务器：" FontSize="15" HorizontalAlignment="Right" VerticalAlignment="Center"></TextBlock>
+            <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <ComboBox ItemsSource="{Binding UrlList}" Width="470" FontSize="15" SelectedIndex="0" SelectedValue="{Binding Url}">
+          
+                </ComboBox>
+                <Button  Command="{Binding UploadFileCommand}" Margin="20,0,0,0" Width="80">上传</Button>
             </StackPanel>
 
         </Grid>

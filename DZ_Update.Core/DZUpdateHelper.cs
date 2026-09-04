@@ -7,12 +7,12 @@ using DZ_Update_CommonTools;
 using DZ_Update_Models.update;
 using DZ_Update_Models;
 
-namespace DZ_Update.Control
+namespace DZ_Update.Core
 {
     public class DZUpdateHelper
     {
-        private String _updateDir = Path.Combine(Environment.CurrentDirectory, UpdateDefine.UpdateFileDir);
-        private String _updateBackupDir = Path.Combine(Environment.CurrentDirectory, UpdateDefine.UpdateBackupDir);
+        private String _updateDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, UpdateDefine.UpdateFileDir);
+        private String _updateBackupDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, UpdateDefine.UpdateBackupDir);
 
         private MainUpdateJson _mainUpdateInfo = null;
         private List<SubUpdateJson> _subUpdateInfoList = new List<SubUpdateJson>();
@@ -211,7 +211,7 @@ namespace DZ_Update.Control
             int fileCount = 0;
             foreach (var item in subUpdateInfo.FileList)
             {
-                String sourceFile = Path.Combine(Environment.CurrentDirectory, item.Path);
+                String sourceFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, item.Path);
                 if (!File.Exists(sourceFile))
                     continue;
 
@@ -227,6 +227,7 @@ namespace DZ_Update.Control
                 String destFile = Path.Combine(currentVersionBackupDir, item.Path);
                 File.Copy(sourceFile, destFile, true);
 
+                RenameTempFile(item.Path);
                 //计算比例
                 fileCount++;
                 progressAction?.Invoke(Convert.ToInt32((fileCount * 1.0 / subUpdateInfo.FileList.Count * 100 * (10 / 100.0))));
@@ -270,13 +271,11 @@ namespace DZ_Update.Control
             ZipTool.UnZip(localZipFile, updateVersionDir);
             //删除zip文件
             File.Delete(localZipFile);
-            this.SelfUpdate(updateVersionDir);
-
             progressAction?.Invoke(99);
             //覆盖文件
-            DirFileOperateTool.CopyDirectory(updateVersionDir, Environment.CurrentDirectory);
+            DirFileOperateTool.CopyDirectory(updateVersionDir, AppDomain.CurrentDomain.BaseDirectory);
             //删除运行目录多余的 update.json
-            String jsonFile = Path.Combine(Environment.CurrentDirectory, UpdateDefine.SubUpdateJsonFileName);
+            String jsonFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, UpdateDefine.SubUpdateJsonFileName);
             if (File.Exists(jsonFile))
                 File.Delete(jsonFile);
             //修改本地版本
@@ -302,9 +301,11 @@ namespace DZ_Update.Control
             //找到最新版本更新的文件列表
             foreach (var item in _subUpdateInfoList.Last().FileList)
             {
-                String localFile = Path.Combine(Environment.CurrentDirectory, item.Path);
-                if (File.Exists(localFile))
-                    File.Delete(localFile);
+                //String localFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, item.Path);
+                //if (File.Exists(localFile))
+                //    File.Delete(localFile);
+
+                RenameTempFile(item.Path);
             }
             progressAction?.Invoke(10);
 
@@ -318,8 +319,7 @@ namespace DZ_Update.Control
             int totalFileCount = Directory.GetFiles(lastDir, "*", SearchOption.AllDirectories).Length;
             int copyFileCount = 0;
 
-            this.SelfUpdate(lastDir);//自更新判断
-            DirFileOperateTool.CopyDirectory(lastDir, Environment.CurrentDirectory, a =>
+            DirFileOperateTool.CopyDirectory(lastDir, AppDomain.CurrentDomain.BaseDirectory, a =>
             {
                 //计算 比例
                 copyFileCount += a;
@@ -347,7 +347,7 @@ namespace DZ_Update.Control
                 if (item.FileName.Contains("zip"))
                     continue;
 
-                String localFile = Path.Combine(Environment.CurrentDirectory, item.Path);
+                String localFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, item.Path);
                 if (!File.Exists(localFile))
                 {
                     needDownloadFileList.Add(item);
@@ -398,12 +398,13 @@ namespace DZ_Update.Control
                     //不相等
                     throw new Exception($"文件 {item.FileName} 下载失败，请重试！");
                 }
+
+                RenameTempFile(item.Path);
             }
 
             progressAction?.Invoke(99);
             //覆盖文件
-            this.SelfUpdate(allUpdateDir);//自更新判断
-            DirFileOperateTool.CopyDirectory(allUpdateDir, Environment.CurrentDirectory);
+            DirFileOperateTool.CopyDirectory(allUpdateDir, AppDomain.CurrentDomain.BaseDirectory);
             Directory.Delete(allUpdateDir, true);
             //修改本地版本
             VersionTool.UpdateLocalVersion(_mainUpdateInfo.LatestVersion);
@@ -412,32 +413,50 @@ namespace DZ_Update.Control
         }
 
         /// <summary>
-        /// 自更新
+        /// 将更新文件重命名，防止占用导致后续复制失败
         /// </summary>
-        private void SelfUpdate(String updateDir)
+        /// <param name="fileRelativePath"></param>
+        private void RenameTempFile(String fileRelativePath)
         {
-            //判断更新文件中 是否包含本程序
-            List<String> filterFileList = new List<String>() { "DZ_Update.exe", "DZ_Update.Models.dll", "DZ_Update.CommonTools.dll" };
+            //找到本地文件
+            String localFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileRelativePath);
+            if (!File.Exists(localFile))
+                return;
 
-            var files = Directory.GetFiles(updateDir, "*", SearchOption.AllDirectories);
-
-            foreach (String file in filterFileList)
+            String backFile = Path.Combine(Path.GetDirectoryName(localFile), Path.GetFileNameWithoutExtension(localFile) + "_back" + Path.GetExtension(localFile));
+            if (File.Exists(backFile))
             {
-                String needUpdateFile = files.FirstOrDefault(f => Path.GetFileName(f).Equals(file));
-                if (!String.IsNullOrEmpty(needUpdateFile))
-                {
-                    //将运行目录的程序改名
-                    String file_source = Path.Combine(Environment.CurrentDirectory, file);
-                    String file_back = Path.Combine(Environment.CurrentDirectory, file + ".back");
-                    if(File.Exists(file_back))
-                        File.Delete(file_back);
+                Console.WriteLine($"{backFile} 已存在，退出备份操作");
+                return;
 
-                    File.Move(file_source, file_back);
-                }
             }
 
-            //继续执行其他正常复制即可
-            return;
+            if (File.Exists(backFile))
+            {
+                 Console.WriteLine($"{backFile} 已存在，执行删除操作");
+                File.Delete(backFile);
+            }
+
+            try
+            {
+                DirFileOperateTool.AddSecurityControllForFile(localFile);
+            }
+            catch (Exception)
+            {
+
+            }
+
+            Console.WriteLine($"{backFile} 执行备份操作");
+            File.Move(localFile, backFile);//备份
+
+            try
+            {
+                DirFileOperateTool.AddSecurityControllForFile(localFile);
+            }
+            catch (Exception)
+            {
+
+            }
         }
     }
 

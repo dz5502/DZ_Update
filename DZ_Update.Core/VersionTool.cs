@@ -3,8 +3,9 @@ using Newtonsoft.Json;
 using System.IO;
 using DZ_Update_Models;
 using DZ_Update_Models.update;
+using System.Collections.Generic;
 
-namespace DZ_Update.Control
+namespace DZ_Update.Core
 {
     public static class VersionTool
     {
@@ -74,7 +75,21 @@ namespace DZ_Update.Control
 
         public static String GetHttpServer()
         {
+
             return _localUpdateConfig.HttpServer;
+        }
+
+        public static void SetHttpServer(String url)
+        {
+
+            _localUpdateConfig.HttpServer = url;
+        }
+
+
+        public static List<String> GetUploadServerList()
+        {
+
+            return _localUpdateConfig.HttpServerUrlList;
         }
     }
 

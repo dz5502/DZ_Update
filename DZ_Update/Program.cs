@@ -1,5 +1,5 @@
 ﻿using System;
-using DZ_Update.Control;
+using DZ_Update.Core;
 
 namespace DZ_Update
 {
