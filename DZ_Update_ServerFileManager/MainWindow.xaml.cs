@@ -221,6 +221,7 @@ namespace DZ_Update_ServerFileManager
                 HttpFileUtil.DeleteDirOrFile(UpdateDefine.MainUpdateJsonFileName);
                 HttpFileUtil.UploadFile(mainUpdateJsonFile, UpdateDefine.MainUpdateJsonFileName);
 
+                MessageBox.Show("上传成功！");
             }
             catch (Exception ex)
             {
